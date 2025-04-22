@@ -1,769 +1,1205 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+// All available tags organized by category
+const tagCategories = {
+  "Domain": ["OMS", "Order Management", "E-commerce", "Retail", "IT", "Customer Data"],
+  "Function": ["Asset Management", "Inventory", "User Lookup", "Ticket Management", "Custom Objects"],
+  "Type": ["Productivity", "Agent Tools", "Documentation", "Tutorial", "Getting Started"]
+};
+
+// Sample ZAF apps with varied styles and tags
+const sampleApps = [
+  {
+    id: 'hello-world',
+    name: 'Hello World App',
+    description: 'A simple Hello World Zendesk app that demonstrates basic ZAF functionality',
+    author: 'Zendesk Team',
+    tags: ['Getting Started', 'Tutorial', 'Documentation'],
+    html: `
 <!DOCTYPE html>
-
-
-
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>ZAF App Catalog</title>
-<!-- You'll need to include Tailwind CSS -->
-
-<style>
-    .app-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Hello World App</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 10px; 
+      color: #333;
     }
-    
-    @media (max-width: 1024px) {
-      .app-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    h1 { 
+      color: #03363D; 
+      font-size: 18px; 
     }
-    
-    @media (max-width: 640px) {
-      .app-grid {
-        grid-template-columns: 1fr;
-      }
+    .user-info {
+      background: #F8F9F9;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 10px;
     }
-
-    /* Custom styles for iframe containers */
-    .preview-container {
-      height: 200px;
+    button {
+      background-color: #078CDF;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
     }
-
-    .full-preview {
-      height: 500px;
+    button:hover {
+      background-color: #0665a2;
     }
   </style>
-
-
-<div class="container mx-auto px-4 py-6">
-<h1 class="text-2xl font-bold mb-1">ZAF App Catalog</h1>
-<p class="text-gray-600 mb-6">Upload and preview Zendesk App Framework applications</p>
-<!-- Main content area -->
-<div id="main-content">
-<div class="mb-6 flex flex-wrap gap-4">
-<div class="relative flex-grow">
-<input class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" id="search-input" placeholder="Search apps..." type="text"/>
-<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            🔍
-          </div>
-</div>
-<div>
-<input accept=".zip" class="hidden" id="file-input" type="file"/>
-<button class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none" id="upload-btn">
-            Upload App
-          </button>
-</div>
-</div>
-<!-- Tag filtering section -->
-<div class="mb-4">
-<div class="font-medium text-gray-700 mb-2">Filter by Tags:</div>
-<div class="flex flex-wrap gap-2" id="tag-categories">
-<!-- Tag categories will be populated here -->
-</div>
-<div class="mt-2 hidden" id="active-tags">
-<div class="text-sm text-gray-700 mb-1">Active filters:</div>
-<div class="flex flex-wrap gap-1" id="active-tags-container">
-<!-- Active tags will be displayed here -->
-</div>
-</div>
-</div>
-<!-- App grid -->
-<div class="app-grid" id="app-grid">
-<!-- App cards will be populated here -->
-</div>
-<!-- Empty state -->
-<div class="text-center py-12 bg-gray-50 rounded-lg hidden" id="empty-state">
-<p class="text-gray-500">No apps found matching your criteria.</p>
-<button class="mt-2 text-blue-500 text-sm hover:underline" id="reset-filters">
-          Reset filters
-        </button>
-</div>
-</div>
-<!-- App preview area -->
-<div class="hidden" id="app-preview">
-<!-- App preview content will be populated here -->
-</div>
-</div>
-
-
-
-        `
-      },
-      {
-        id: 'ticket-tagger',
-        name: 'Ticket Tagger',
-        description: 'Helps agents tag tickets with a simple UI',
-        author: 'Support Team',
-        tags: ['Productivity', 'Ticket Management', 'Agent Tools'],
-        html: `
-          <!DOCTYPE html>
-
-
-
-<meta charset="utf-8"/>
-<title>Ticket Tagger</title>
-<style>
-              body { 
-                font-family: Arial, sans-serif; 
-                padding: 10px; 
-                color: #333;
-              }
-              h1 { 
-                color: #03363D; 
-                font-size: 18px; 
-              }
-              .tag {
-                display: inline-block;
-                background: #E9EBED;
-                border-radius: 4px;
-                padding: 5px 10px;
-                margin: 5px;
-                cursor: pointer;
-                transition: all 0.2s;
-              }
-              .tag:hover {
-                background: #D8DCDE;
-              }
-              .tag.selected {
-                background: #078CDF;
-                color: white;
-              }
-              .tag-section {
-                margin-bottom: 15px;
-              }
-              .tag-section h2 {
-                font-size: 14px;
-                margin-bottom: 5px;
-                color: #49545C;
-              }
-              .actions {
-                margin-top: 15px;
-                display: flex;
-                justify-content: flex-end;
-              }
-              button {
-                background-color: #078CDF;
-                color: white;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 4px;
-                cursor: pointer;
-              }
-              button:hover {
-                background-color: #0665a2;
-              }
-            </style>
-
-
-<h1>Ticket Tagger</h1>
-<p>Select tags to apply to this ticket:</p>
-<div class="tag-section">
-<h2>Issue Type</h2>
-<div class="tag" onclick="toggleTag(this)">bug</div>
-<div class="tag" onclick="toggleTag(this)">question</div>
-<div class="tag" onclick="toggleTag(this)">feature_request</div>
-<div class="tag" onclick="toggleTag(this)">billing</div>
-</div>
-<div class="tag-section">
-<h2>Priority</h2>
-<div class="tag" onclick="toggleTag(this)">urgent</div>
-<div class="tag" onclick="toggleTag(this)">high</div>
-<div class="tag" onclick="toggleTag(this)">medium</div>
-<div class="tag" onclick="toggleTag(this)">low</div>
-</div>
-<div class="tag-section">
-<h2>Product Area</h2>
-<div class="tag" onclick="toggleTag(this)">mobile</div>
-<div class="tag" onclick="toggleTag(this)">web</div>
-<div class="tag" onclick="toggleTag(this)">api</div>
-<div class="tag" onclick="toggleTag(this)">admin</div>
-</div>
-<div class="actions">
-<button onclick="applyTags()">Apply Tags</button>
-</div>
-
-
-
-        `
-      },
-      {
-        id: 'order-lookup',
-        name: 'Order Lookup',
-        description: 'Quickly look up customer orders directly from the ticket sidebar',
-        author: 'E-commerce Team',
-        tags: ['OMS', 'Order Management', 'E-commerce', 'Retail'],
-        html: `
-          <!DOCTYPE html>
-
-
-
-<meta charset="utf-8"/>
-<title>Order Lookup</title>
-<style>
-              body { 
-                font-family: Arial, sans-serif; 
-                padding: 10px; 
-                color: #333;
-              }
-              h1 { 
-                color: #03363D; 
-                font-size: 18px; 
-                margin-bottom: 15px;
-              }
-              .search-container {
-                display: flex;
-                margin-bottom: 15px;
-              }
-              input {
-                flex-grow: 1;
-                padding: 8px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                margin-right: 8px;
-                font-size: 14px;
-              }
-              button {
-                background-color: #078CDF;
-                color: white;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 14px;
-              }
-              button:hover {
-                background-color: #0665a2;
-              }
-              .order {
-                border: 1px solid #e0e0e0;
-                border-radius: 4px;
-                margin-bottom: 10px;
-                overflow: hidden;
-              }
-              .order-header {
-                background-color: #f5f5f5;
-                padding: 10px;
-                font-weight: bold;
-                border-bottom: 1px solid #e0e0e0;
-                display: flex;
-                justify-content: space-between;
-              }
-              .order-status {
-                font-size: 12px;
-                padding: 3px 8px;
-                border-radius: 10px;
-                font-weight: normal;
-              }
-              .status-shipped {
-                background-color: #e3fcef;
-                color: #0e8a5f;
-              }
-              .status-delivered {
-                background-color: #e3f1fd;
-                color: #1570c1;
-              }
-              .order-body {
-                padding: 10px;
-              }
-              .order-details {
-                margin-bottom: 10px;
-                font-size: 14px;
-              }
-              .order-item {
-                display: flex;
-                padding: 8px 0;
-                border-bottom: 1px solid #f0f0f0;
-              }
-              .item-image {
-                width: 40px;
-                height: 40px;
-                background-color: #f0f0f0;
-                margin-right: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 12px;
-                color: #666;
-              }
-              .item-details {
-                flex-grow: 1;
-              }
-              .item-name {
-                font-weight: 500;
-                margin-bottom: 3px;
-              }
-              .item-price {
-                font-size: 12px;
-                color: #666;
-              }
-            </style>
-
-
-<h1>Order Lookup</h1>
-<div class="search-container">
-<input id="order-search" placeholder="Search by order #, email, or name..." type="text" value="john.doe@example.com"/>
-<button id="search-btn">Search</button>
-</div>
-<div id="orders-list">
-<div class="order">
-<div class="order-header">
-                  Order #ORD-7829 <span class="order-status status-shipped">Shipped</span>
-</div>
-<div class="order-body">
-<div class="order-details">
-<div><strong>Date:</strong> April 15, 2025</div>
-<div><strong>Total:</strong> $87.95</div>
-</div>
-<div class="order-items">
-<div class="order-item">
-<div class="item-image">img</div>
-<div class="item-details">
-<div class="item-name">Wireless Headphones</div>
-<div class="item-price">$59.99 × 1</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-
-        `
-      }
-    ];
-
-    // State variables
-    let apps = [...sampleApps];
-    let selectedTags = [];
-    let filteredApps = [...apps];
-    let selectedApp = null;
-    let isUploading = false;
-
-    // Initialize the app
-    document.addEventListener('DOMContentLoaded', function() {
-      renderTagCategories();
-      renderApps();
-      setupEventListeners();
+</head>
+<body>
+  <h1>Hello World App</h1>
+  <p>This is a simple Zendesk app demo. In a real ZAF app, it would interact with the Zendesk Client.</p>
+  
+  <div class="user-info">
+    <p><strong>Current User:</strong> <span id="current-user">Demo User</span></p>
+    <p><strong>Ticket Subject:</strong> <span id="ticket-subject">Sample ticket #123</span></p>
+  </div>
+  
+  <button id="update-btn">Refresh Data</button>
+  
+  <script>
+    // In a real app, this would use ZAFClient
+    document.getElementById('update-btn').addEventListener('click', function() {
+      const names = ['John Doe', 'Jane Smith', 'Alex Johnson', 'Sam Wilson'];
+      const tickets = ['Billing Issue #452', 'Login Problem #789', 'Feature Request #321', 'Account Question #654'];
+      
+      // Simulate data update
+      document.getElementById('current-user').textContent = 
+        names[Math.floor(Math.random() * names.length)];
+      document.getElementById('ticket-subject').textContent = 
+        tickets[Math.floor(Math.random() * tickets.length)];
     });
-
-    // Set up event listeners
-    function setupEventListeners() {
-      // Search input
-      document.getElementById('search-input').addEventListener('input', function(e) {
-        filterApps(e.target.value, selectedTags);
-      });
-
-      // Upload button
-      document.getElementById('upload-btn').addEventListener('click', function() {
-        document.getElementById('file-input').click();
-      });
-
-      // File input
-      document.getElementById('file-input').addEventListener('change', handleFileUpload);
-
-      // Reset filters button
-      document.getElementById('reset-filters').addEventListener('click', function() {
-        document.getElementById('search-input').value = '';
-        selectedTags = [];
-        renderActiveTags();
-        filterApps('', []);
-      });
+  </script>
+</body>
+</html>
+    `
+  },
+  {
+    id: 'ticket-tagger',
+    name: 'Ticket Tagger',
+    description: 'Helps agents tag tickets with a simple UI',
+    author: 'Support Team',
+    tags: ['Productivity', 'Ticket Management', 'Agent Tools'],
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ticket Tagger</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 10px; 
+      color: #333;
     }
-
-    // Render tag categories
-    function renderTagCategories() {
-      const container = document.getElementById('tag-categories');
-      container.innerHTML = '';
-
-      for (const [category, tags] of Object.entries(tagCategories)) {
-        const categoryEl = document.createElement('div');
-        categoryEl.className = 'mb-3 mr-4';
-        
-        const titleEl = document.createElement('div');
-        titleEl.className = 'text-sm text-gray-500 mb-1';
-        titleEl.textContent = category;
-        
-        const tagsContainer = document.createElement('div');
-        tagsContainer.className = 'flex flex-wrap gap-1';
-        
-        for (const tag of tags) {
-          const tagButton = document.createElement('button');
-          tagButton.className = `text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200`;
-          tagButton.textContent = tag;
-          tagButton.onclick = function() {
-            toggleTag(tag);
-          };
-          
-          tagsContainer.appendChild(tagButton);
-        }
-        
-        categoryEl.appendChild(titleEl);
-        categoryEl.appendChild(tagsContainer);
-        container.appendChild(categoryEl);
-      }
+    h1 { 
+      color: #03363D; 
+      font-size: 18px; 
     }
-
-    // Toggle a tag selection
-    function toggleTag(tag) {
-      if (selectedTags.includes(tag)) {
-        selectedTags = selectedTags.filter(t =&gt; t !== tag);
-      } else {
-        selectedTags.push(tag);
-      }
-      
-      renderActiveTags();
-      filterApps(document.getElementById('search-input').value, selectedTags);
-      updateTagButtons();
+    .tag {
+      display: inline-block;
+      background: #E9EBED;
+      border-radius: 4px;
+      padding: 5px 10px;
+      margin: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-
-    // Update tag buttons to show selected state
-    function updateTagButtons() {
-      const buttons = document.querySelectorAll('#tag-categories button');
-      
-      buttons.forEach(button =&gt; {
-        if (selectedTags.includes(button.textContent)) {
-          button.className = 'text-xs px-2 py-1 rounded bg-blue-500 text-white';
-        } else {
-          button.className = 'text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200';
-        }
-      });
+    .tag:hover {
+      background: #D8DCDE;
     }
-
-    // Render active tags
-    function renderActiveTags() {
-      const container = document.getElementById('active-tags');
-      const tagsContainer = document.getElementById('active-tags-container');
-      
-      if (selectedTags.length === 0) {
-        container.classList.add('hidden');
-        return;
-      }
-      
-      container.classList.remove('hidden');
-      tagsContainer.innerHTML = '';
-      
-      for (const tag of selectedTags) {
-        const tagEl = document.createElement('div');
-        tagEl.className = 'flex items-center bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded';
-        
-        const tagText = document.createTextNode(tag);
-        
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'ml-1 text-blue-500';
-        removeBtn.textContent = '×';
-        removeBtn.onclick = function() {
-          toggleTag(tag);
-        };
-        
-        tagEl.appendChild(tagText);
-        tagEl.appendChild(removeBtn);
-        tagsContainer.appendChild(tagEl);
-      }
-      
-      // Add clear all button
-      if (selectedTags.length &gt; 0) {
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'text-xs text-red-500 underline ml-2';
-        clearBtn.textContent = 'Clear all';
-        clearBtn.onclick = function() {
-          selectedTags = [];
-          renderActiveTags();
-          filterApps(document.getElementById('search-input').value, []);
-          updateTagButtons();
-        };
-        
-        tagsContainer.appendChild(clearBtn);
-      }
+    .tag.selected {
+      background: #078CDF;
+      color: white;
     }
-
-    // Filter apps based on search term and selected tags
-    function filterApps(searchTerm, tags) {
-      const term = searchTerm.toLowerCase();
-      
-      filteredApps = apps.filter(app =&gt; {
-        // Filter by search term
-        const matchesSearch = 
-          !term ||
-          app.name.toLowerCase().includes(term) ||
-          app.description.toLowerCase().includes(term) ||
-          app.author.toLowerCase().includes(term);
-        
-        // Filter by selected tags
-        const matchesTags = 
-          tags.length === 0 ||
-          tags.some(tag =&gt; app.tags.includes(tag));
-        
-        return matchesSearch &amp;&amp; matchesTags;
-      });
-      
-      renderApps();
+    .tag-section {
+      margin-bottom: 15px;
     }
+    .tag-section h2 {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #49545C;
+    }
+    .actions {
+      margin-top: 15px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    button {
+      background-color: #078CDF;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0665a2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ticket Tagger</h1>
+  <p>Select tags to apply to this ticket:</p>
+  
+  <div class="tag-section">
+    <h2>Issue Type</h2>
+    <div class="tag" onclick="toggleTag(this)">bug</div>
+    <div class="tag" onclick="toggleTag(this)">question</div>
+    <div class="tag" onclick="toggleTag(this)">feature_request</div>
+    <div class="tag" onclick="toggleTag(this)">billing</div>
+  </div>
+  
+  <div class="tag-section">
+    <h2>Priority</h2>
+    <div class="tag" onclick="toggleTag(this)">urgent</div>
+    <div class="tag" onclick="toggleTag(this)">high</div>
+    <div class="tag" onclick="toggleTag(this)">medium</div>
+    <div class="tag" onclick="toggleTag(this)">low</div>
+  </div>
+  
+  <div class="tag-section">
+    <h2>Product Area</h2>
+    <div class="tag" onclick="toggleTag(this)">mobile</div>
+    <div class="tag" onclick="toggleTag(this)">web</div>
+    <div class="tag" onclick="toggleTag(this)">api</div>
+    <div class="tag" onclick="toggleTag(this)">admin</div>
+  </div>
+  
+  <div class="actions">
+    <button onclick="applyTags()">Apply Tags</button>
+  </div>
+  
+  <script>
+    // Toggle tag selection
+    function toggleTag(element) {
+      element.classList.toggle('selected');
+    }
+    
+    // Apply tags (in a real app, this would use ZAFClient)
+    function applyTags() {
+      const selectedTags = document.querySelectorAll('.tag.selected');
+      const tagNames = Array.from(selectedTags).map(tag => tag.textContent);
+      
+      // Show the tags that would be applied
+      alert('Tags applied: ' + (tagNames.length ? tagNames.join(', ') : 'None'));
+    }
+  </script>
+</body>
+</html>
+    `
+  },
+  {
+    id: 'order-lookup',
+    name: 'Order Lookup',
+    description: 'Quickly look up customer orders directly from the ticket sidebar',
+    author: 'E-commerce Team',
+    tags: ['OMS', 'Order Management', 'E-commerce', 'Retail'],
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Order Lookup</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 10px; 
+      color: #333;
+    }
+    h1 { 
+      color: #03363D; 
+      font-size: 18px; 
+      margin-bottom: 15px;
+    }
+    .search-container {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    input {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 8px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #078CDF;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #0665a2;
+    }
+    .order {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .order-header {
+      background-color: #f5f5f5;
+      padding: 10px;
+      font-weight: bold;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .order-status {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: normal;
+    }
+    .status-shipped {
+      background-color: #e3fcef;
+      color: #0e8a5f;
+    }
+    .status-delivered {
+      background-color: #e3f1fd;
+      color: #1570c1;
+    }
+    .order-body {
+      padding: 10px;
+    }
+    .order-details {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .order-item {
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .item-image {
+      width: 40px;
+      height: 40px;
+      background-color: #f0f0f0;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #666;
+    }
+    .item-details {
+      flex-grow: 1;
+    }
+    .item-name {
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+    .item-price {
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Order Lookup</h1>
+  
+  <div class="search-container">
+    <input 
+      type="text" 
+      id="order-search" 
+      placeholder="Search by order #, email, or name..." 
+      value="john.doe@example.com"
+    >
+    <button id="search-btn">Search</button>
+  </div>
+  
+  <div id="orders-list">
+    <div class="order">
+      <div class="order-header">
+        Order #ORD-7829 <span class="order-status status-shipped">Shipped</span>
+      </div>
+      <div class="order-body">
+        <div class="order-details">
+          <div><strong>Date:</strong> April 15, 2025</div>
+          <div><strong>Total:</strong> $87.95</div>
+        </div>
+        <div class="order-items">
+          <div class="order-item">
+            <div class="item-image">img</div>
+            <div class="item-details">
+              <div class="item-name">Wireless Headphones</div>
+              <div class="item-price">$59.99 × 1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+  },
+  {
+    id: 'user-profile',
+    name: 'User Profile Viewer',
+    description: 'View detailed user information and account history',
+    author: 'User Management Team',
+    tags: ['User Lookup', 'Customer Data', 'Account Management'],
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>User Profile Viewer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 16px;
+      color: #333;
+      background-color: #f9f9f9;
+      margin: 0;
+    }
+    h1 {
+      color: #2c3e50;
+      font-size: 20px;
+      margin: 0 0 8px 0;
+    }
+    .profile-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .profile-header {
+      background-color: #3498db;
+      color: white;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #3498db;
+      margin-right: 16px;
+    }
+    .user-info {
+      flex-grow: 1;
+    }
+    .user-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 4px 0;
+    }
+    .user-email {
+      font-size: 14px;
+      opacity: 0.9;
+      margin: 0;
+    }
+    .profile-body {
+      padding: 20px;
+    }
+    .info-group {
+      margin-bottom: 16px;
+    }
+    .info-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #7f8c8d;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 15px;
+    }
+    .stats {
+      display: flex;
+      border-top: 1px solid #ecf0f1;
+      margin-top: 8px;
+    }
+    .stat-item {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+  <h1>User Profile</h1>
 
-    // Render apps grid
-    function renderApps() {
-      const container = document.getElementById('app-grid');
-      const emptyState = document.getElementById('empty-state');
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="avatar">JD</div>
+      <div class="user-info">
+        <div class="user-name">John Doe</div>
+        <div class="user-email">john.doe@example.com</div>
+      </div>
+    </div>
+
+    <div class="profile-body">
+      <div class="info-group">
+        <div class="info-label">Account Created</div>
+        <div class="info-value">March 12, 2023</div>
+      </div>
+      <div class="info-group">
+        <div class="info-label">Subscription Plan</div>
+        <div class="info-value">Premium</div>
+      </div>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value">8</div>
+          <div class="stat-label">Tickets</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">$642</div>
+          <div class="stat-label">Spent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+  },
+  {
+    id: 'asset-tracker',
+    name: 'Asset Tracker',
+    description: 'Track and manage IT assets assigned to customers',
+    author: 'IT Support Team',
+    tags: ['IT', 'Asset Management', 'Inventory'],
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Asset Tracker</title>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      background-color: #ffffff;
+      color: #424242;
+      margin: 0;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 500;
+      color: #212121;
+      margin: 0 0 16px 0;
+    }
+    .filters {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      flex-grow: 1;
+      font-size: 14px;
+    }
+    .asset-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+      margin-bottom: 12px;
+    }
+    .asset-header {
+      padding: 16px;
+      background-color: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .asset-name {
+      font-weight: 500;
+      font-size: 16px;
+      color: #212121;
+    }
+    .asset-status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-active {
+      background-color: #e6f7ed;
+      color: #00994d;
+    }
+    .asset-details {
+      padding: 16px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .detail-label {
+      color: #757575;
+      font-size: 14px;
+    }
+    .detail-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: #212121;
+    }
+  </style>
+</head>
+<body>
+  <h1>Asset Tracker</h1>
+
+  <div class="filters">
+    <input type="text" placeholder="Search assets...">
+  </div>
+
+  <div class="assets-list">
+    <div class="asset-card">
+      <div class="asset-header">
+        <div class="asset-name">Dell XPS 15 Laptop</div>
+        <div class="asset-status status-active">Active</div>
+      </div>
+      <div class="asset-details">
+        <div class="detail-row">
+          <div class="detail-label">Asset ID</div>
+          <div class="detail-value">LP-2023-0042</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Assigned To</div>
+          <div class="detail-value">John Smith</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Purchase Date</div>
+          <div class="detail-value">Jan 15, 2023</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+  },
+  {
+    id: 'custom-objects',
+    name: 'Custom Objects Explorer',
+    description: 'Browse and edit custom objects in Zendesk',
+    author: 'Developer Tools Team',
+    tags: ['Custom Objects', 'Developer Tools', 'Data Management'],
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Custom Objects Explorer</title>
+  <style>
+    :root {
+      --primary: #17494D;
+      --secondary: #228F67;
+      --background: #F5F9F9;
+      --surface: #ffffff;
+      --border: #DEDEDE;
+      --text: #2F3941;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      padding: 16px;
+      margin: 0;
+      line-height: 1.5;
+    }
+    
+    .header {
+      margin-bottom: 24px;
+    }
+    
+    h1 {
+      color: var(--primary);
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+    }
+    
+    .description {
+      color: #68737D;
+      font-size: 14px;
+      margin: 0;
+    }
+    
+    .search-bar {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    .search-bar input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 14px;
+      background-color: var(--surface);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #68737D;
+    }
+    
+    .object-types {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    
+    .object-type {
+      padding: 6px 12px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    
+    .object-type.active {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .object-card {
+      background-color: var(--surface);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    
+    .object-header {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .object-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .object-id {
+      font-size: 12px;
+      color: #68737D;
+    }
+    
+    .object-body {
+      padding: 16px;
+    }
+    
+    .field-row {
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .field-name {
+      flex: 0 0 120px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    .field-value {
+      flex: 1;
+      font-size: 14px;
+      color: #2F3941;
+    }
+    
+    .object-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px 16px;
+      background-color: #F9F9FA;
+      border-top: 1px solid var(--border);
+    }
+    
+    .btn {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    
+    .btn-primary {
+      background-color: var(--secondary);
+      color: white;
+      border-color: var(--secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Custom Objects Explorer</h1>
+    <p class="description">Browse and manage your Zendesk custom objects</p>
+  </div>
+  
+  <div class="search-bar">
+    <div class="search-icon">🔍</div>
+    <input type="text" placeholder="Search custom objects...">
+  </div>
+  
+  <div class="object-types">
+    <div class="object-type active">All Objects</div>
+    <div class="object-type">Products</div>
+    <div class="object-type">Subscriptions</div>
+    <div class="object-type">Orders</div>
+    <div class="object-type">Locations</div>
+    <div class="object-type">Contracts</div>
+  </div>
+  
+  <div class="objects-list">
+    <div class="object-card">
+      <div class="object-header">
+        <div class="object-name">Premium Subscription</div>
+        <div class="object-id">obj_123456</div>
+      </div>
+      <div class="object-body">
+        <div class="field-row">
+          <div class="field-name">Type</div>
+          <div class="field-value">Subscription</div>
+        </div>
+        <div class="field-row">
+          <div class="field-name">Status</div>
+          <div class="field-value">Active</div>
+        </div>
+        <div class="field-row">
+          <div class="field-name">Created</div>
+          <div class="field-value">Apr 15, 2025</div>
+        </div>
+        <div class="field-row">
+          <div class="field-name">Customer</div>
+          <div class="field-value">John Doe (customer_8791)</div>
+        </div>
+      </div>
+      <div class="object-footer">
+        <button class="btn">View Relations</button>
+        <button class="btn btn-primary">Edit</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+  }
+];
+
+const ZAFAppCatalog = () => {
+  const [apps, setApps] = useState(sampleApps);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [filteredApps, setFilteredApps] = useState(sampleApps);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [previewActive, setPreviewActive] = useState(false);
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showTagsMenu, setShowTagsMenu] = useState(false);
+
+  // Filter apps based on search term and selected tags
+  useEffect(() => {
+    let filtered = apps;
+    
+    // Filter by search term
+    if (searchTerm) {
+      const lowercasedSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(app => 
+        app.name.toLowerCase().includes(lowercasedSearch) ||
+        app.description.toLowerCase().includes(lowercasedSearch) ||
+        app.author.toLowerCase().includes(lowercasedSearch)
+      );
+    }
+    
+    // Filter by selected tags
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(app => 
+        selectedTags.some(tag => app.tags.includes(tag))
+      );
+    }
+    
+    setFilteredApps(filtered);
+  }, [searchTerm, selectedTags, apps]);
+
+  const handleAppSelect = (app) => {
+    setSelectedApp(app);
+    setPreviewActive(true);
+  };
+
+  const handleBackToGallery = () => {
+    setPreviewActive(false);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    
+    try {
+      // Simulate file processing
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (filteredApps.length === 0) {
-        container.classList.add('hidden');
-        emptyState.classList.remove('hidden');
-        return;
-      }
+      // Create a fake app object based on the filename
+      const filename = file.name;
+      const appName = filename.replace('.zip', '');
       
-      container.classList.remove('hidden');
-      emptyState.classList.add('hidden');
+      const newApp = {
+        id: Date.now().toString(),
+        name: appName,
+        description: `Uploaded app - ${new Date().toLocaleString()}`,
+        author: 'You',
+        tags: ['Custom'],
+        html: sampleApps[0].html
+      };
       
-      container.innerHTML = '';
+      // Add to apps list
+      setApps(prevApps => [...prevApps, newApp]);
       
-      for (const app of filteredApps) {
-        const card = document.createElement('div');
-        card.className = 'app-card border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-white';
-        card.onclick = function() {
-          showAppPreview(app);
-        };
-        
-        // Card header
-        const header = document.createElement('div');
-        header.className = 'p-4';
-        
-        const title = document.createElement('h3');
-        title.className = 'font-bold text-lg';
-        title.textContent = app.name;
-        
-        const desc = document.createElement('p');
-        desc.className = 'text-gray-600 text-sm mt-1';
-        desc.textContent = app.description;
-        
-        const author = document.createElement('p');
-        author.className = 'text-xs text-gray-500 mt-2';
-        author.textContent = `by ${app.author}`;
-        
-        const tagsContainer = document.createElement('div');
-        tagsContainer.className = 'mt-2 flex flex-wrap gap-1';
-        
-        // Display only first 2 tags
-        for (let i = 0; i &lt; Math.min(2, app.tags.length); i++) {
-          const tag = app.tags[i];
-          const tagEl = document.createElement('span');
-          tagEl.className = 'bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded';
-          tagEl.textContent = tag;
-          tagEl.onclick = function(e) {
-            e.stopPropagation();
-            toggleTag(tag);
-          };
-          
-          tagsContainer.appendChild(tagEl);
-        }
-        
-        // Show +X more if more than 2 tags
-        if (app.tags.length &gt; 2) {
-          const more = document.createElement('span');
-          more.className = 'text-xs text-gray-500';
-          more.textContent = `+${app.tags.length - 2} more`;
-          tagsContainer.appendChild(more);
-        }
-        
-        header.appendChild(title);
-        header.appendChild(desc);
-        header.appendChild(author);
-        header.appendChild(tagsContainer);
-        
-        // Preview section
-        const preview = document.createElement('div');
-        preview.className = 'app-preview-container border-t preview-container';
-        
-        const iframe = document.createElement('iframe');
-        iframe.className = 'w-full h-full border-0 block';
-        iframe.title = app.name;
-        // Setup iframe after appending to DOM
-        
-        preview.appendChild(iframe);
-        
-        // Assemble card
-        card.appendChild(header);
-        card.appendChild(preview);
-        
-        container.appendChild(card);
-        
-        // Initialize iframe content after added to DOM
+      // Reset the file input
+      event.target.value = null;
+      
+      // Show the newly uploaded app
+      setSelectedApp(newApp);
+      setPreviewActive(true);
+      
+    } catch (error) {
+      console.error("Error processing ZIP:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const toggleTag = (tag) => {
+    setSelectedTags(prevTags => 
+      prevTags.includes(tag)
+        ? prevTags.filter(t => t !== tag)
+        : [...prevTags, tag]
+    );
+  };
+
+  // Component for displaying an app in an iframe
+  const AppIframe = ({ htmlContent, height = "100%" }) => {
+    const iframeRef = useRef(null);
+    
+    useEffect(() => {
+      if (iframeRef.current) {
+        const iframe = iframeRef.current;
         const iframeDoc = iframe.contentWindow.document;
         iframeDoc.open();
-        iframeDoc.write(app.html);
+        iframeDoc.write(htmlContent);
         iframeDoc.close();
       }
-    }
+    }, [htmlContent]);
+    
+    return (
+      <iframe 
+        ref={iframeRef}
+        title="App Preview"
+        style={{ 
+          border: "none", 
+          width: "100%", 
+          height: height,
+          display: "block"
+        }}
+      />
+    );
+  };
 
-    // Show app preview
-    function showAppPreview(app) {
-      selectedApp = app;
-      document.getElementById('main-content').classList.add('hidden');
-      
-      const previewContainer = document.getElementById('app-preview');
-      previewContainer.classList.remove('hidden');
-      previewContainer.innerHTML = '';
-      
-      // Back button
-      const backBtn = document.createElement('div');
-      backBtn.className = 'mb-4';
-      
-      const backLink = document.createElement('button');
-      backLink.className = 'text-blue-500 hover:text-blue-700 flex items-center';
-      backLink.textContent = '← Back to Gallery';
-      backLink.onclick = function() {
-        previewContainer.classList.add('hidden');
-        document.getElementById('main-content').classList.remove('hidden');
-      };
-      
-      backBtn.appendChild(backLink);
-      
-      // App info section
-      const infoSection = document.createElement('div');
-      infoSection.className = 'mb-6';
-      
-      const title = document.createElement('h2');
-      title.className = 'text-2xl font-bold';
-      title.textContent = app.name;
-      
-      const desc = document.createElement('p');
-      desc.className = 'text-gray-600 mt-1';
-      desc.textContent = app.description;
-      
-      const metaInfo = document.createElement('div');
-      metaInfo.className = 'mt-2 flex items-center';
-      
-      const author = document.createElement('span');
-      author.className = 'text-sm text-gray-500 mr-2';
-      author.textContent = `by ${app.author}`;
-      
-      const tagsContainer = document.createElement('div');
-      tagsContainer.className = 'flex flex-wrap gap-1';
-      
-      for (const tag of app.tags) {
-        const tagEl = document.createElement('span');
-        tagEl.className = 'bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded';
-        tagEl.textContent = tag;
-        tagsContainer.appendChild(tagEl);
-      }
-      
-      metaInfo.appendChild(author);
-      metaInfo.appendChild(tagsContainer);
-      
-      infoSection.appendChild(title);
-      infoSection.appendChild(desc);
-      infoSection.appendChild(metaInfo);
-      
-      // Tabs and preview
-      const previewSection = document.createElement('div');
-      previewSection.className = 'border rounded-lg overflow-hidden';
-      
-      const tabs = document.createElement('div');
-      tabs.className = 'bg-gray-100 px-4 py-2 border-b flex';
-      
-      const previewTab = document.createElement('button');
-      previewTab.className = 'mr-4 py-1 text-blue-600 border-b-2 border-blue-600';
-      previewTab.textContent = 'Interactive Preview';
-      previewTab.onclick = function() {
-        previewTab.className = 'mr-4 py-1 text-blue-600 border-b-2 border-blue-600';
-        htmlTab.className = 'py-1 text-gray-600';
-        previewContent.classList.remove('hidden');
-        htmlContent.classList.add('hidden');
-      };
-      
-      const htmlTab = document.createElement('button');
-      htmlTab.className = 'py-1 text-gray-600';
-      htmlTab.textContent = 'HTML';
-      htmlTab.onclick = function() {
-        previewTab.className = 'mr-4 py-1 text-gray-600';
-        htmlTab.className = 'py-1 text-blue-600 border-b-2 border-blue-600';
-        previewContent.classList.add('hidden');
-        htmlContent.classList.remove('hidden');
-      };
-      
-      tabs.appendChild(previewTab);
-      tabs.appendChild(htmlTab);
-      
-      const content = document.createElement('div');
-      content.className = 'bg-white';
-      
-      const previewContent = document.createElement('div');
-      previewContent.className = 'full-preview';
-      
-      const iframe = document.createElement('iframe');
-      iframe.className = 'w-full h-full border-0 block';
-      iframe.title = app.name;
-      
-      previewContent.appendChild(iframe);
-      
-      const htmlContent = document.createElement('div');
-      htmlContent.className = 'p-4 bg-gray-50 overflow-auto max-h-96 hidden';
-      
-      const pre = document.createElement('pre');
-      pre.className = 'text-sm whitespace-pre-wrap';
-      
-      const code = document.createElement('code');
-      code.textContent = app.html;
-      
-      pre.appendChild(code);
-      htmlContent.appendChild(pre);
-      
-      content.appendChild(previewContent);
-      content.appendChild(htmlContent);
-      
-      previewSection.appendChild(tabs);
-      previewSection.appendChild(content);
-      
-      // Assemble preview
-      previewContainer.appendChild(backBtn);
-      previewContainer.appendChild(infoSection);
-      previewContainer.appendChild(previewSection);
-      
-      // Initialize iframe content after added to DOM
-      const iframeDoc = iframe.contentWindow.document;
-      iframeDoc.open();
-      iframeDoc.write(app.html);
-      iframeDoc.close();
-    }
+  // Component for app preview
+  const AppPreview = ({ app }) => {
+    const [activeTab, setActiveTab] = useState(0);
+    
+    return (
+      <div>
+        <div className="mb-4">
+          <button 
+            onClick={handleBackToGallery}
+            className="text-blue-500 hover:text-blue-700 flex items-center"
+          >
+            ← Back to Gallery
+          </button>
+        </div>
+        
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">{app.name}</h2>
+          <p className="text-gray-600 mt-1">{app.description}</p>
+          <div className="mt-2 flex items-center">
+            <span className="text-sm text-gray-500 mr-2">by {app.author}</span>
+            <div className="flex flex-wrap gap-1">
+              {app.tags.map(tag => (
+                <span 
+                  key={tag} 
+                  className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        <div className="border rounded-lg overflow-hidden">
+          <div className="bg-gray-100 px-4 py-2 border-b flex">
+            <button
+              onClick={() => setActiveTab(0)}
+              className={`mr-4 py-1 ${activeTab === 0 ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+            >
+              Interactive Preview
+            </button>
+            <button
+              onClick={() => setActiveTab(1)}
+              className={`py-1 ${activeTab === 1 ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+            >
+              HTML
+            </button>
+          </div>
+          
+          <div className="bg-white">
+            {activeTab === 0 ? (
+              <div style={{ height: "500px" }}>
+                <AppIframe htmlContent={app.html} />
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-50 overflow-auto max-h-96">
+                <pre className="text-sm whitespace-pre-wrap">
+                  <code>{app.html}</code>
+                </pre>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
-    // Handle file upload
-    async function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      isUploading = true;
-      document.getElementById('upload-btn').textContent = 'Processing...';
-      
-      try {
-        // Simulate processing
-        await new Promise(resolve =&gt; setTimeout(resolve, 1000));
+  // Component for app card in the gallery
+  const AppCard = ({ app }) => {
+    return (
+      <div 
+        className="app-card border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer bg-white"
+        onClick={() => handleAppSelect(app)}
+      >
+        <div className="p-4">
+          <h3 className="font-bold text-lg">{app.name}</h3>
+          <p className="text-gray-600 text-sm mt-1">{app.description}</p>
+          <p className="text-xs text-gray-500 mt-2">by {app.author}</p>
+          
+          <div className="mt-2 flex flex-wrap gap-1">
+            {app.tags.slice(0, 2).map(tag => (
+              <span 
+                key={tag} 
+                className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleTag(tag);
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+            {app.tags.length > 2 && (
+              <span className="text-xs text-gray-500">+{app.tags.length - 2} more</span>
+            )}
+          </div>
+        </div>
         
-        const filename = file.name;
-        const appName = filename.replace('.zip', '');
-        
-        const newApp = {
-          id: Date.now().toString(),
-          name: appName,
-          description: `Uploaded app - ${new Date().toLocaleString()}`,
-          author: 'You',
-          tags: ['Custom'],
-          html: sampleApps[0].html // Use sample HTML for demo
-        };
-        
-        apps.push(newApp);
-        filterApps(document.getElementById('search-input').value, selectedTags);
-        
-        event.target.value = null;
-        
-        // Show the newly uploaded app
-        showAppPreview(newApp);
-        
-      } catch (error) {
-        console.error("Error processing ZIP:", error);
-      } finally {
-        isUploading = false;
-        document.getElementById('upload-btn').textContent = 'Upload App';
-      }
-    }
-  
+        <div className="app-preview-container border-t" style={{ height: "200px" }}>
+          <AppIframe htmlContent={app.html} />
+        </div>
+      </div>
+    );
+  };
 
+  // Simple tag selector component
+  const TagSelector = () => {
+    return (
+      <div className="mb-4">
+        <div className="font-medium text-gray-700 mb-2">Filter by Tags:</div>
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(tagCategories).map(([category, tags]) => (
+            <div key={category} className="mb-3 mr-4">
+              <div className="text-sm text-gray-500 mb-1">{category}</div>
+              <div className="flex flex-wrap gap-1">
+                {tags.map(tag => (
+                  <button
+                    key={tag}
+                    className={`text-xs px-2 py-1 rounded ${
+                      selectedTags.includes(tag)
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    onClick={() => toggleTag(tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {selectedTags.length > 0 && (
+          <div className="mt-2">
+            <div className="text-sm text-gray-700 mb-1">Active filters:</div>
+            <div className="flex flex-wrap gap-1">
+              {selectedTags.map(tag => (
+                <div key={tag} className="flex items-center bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                  {tag}
+                  <button 
+                    className="ml-1 text-blue-500"
+                    onClick={() => toggleTag(tag)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              
+              <button 
+                className="text-xs text-red-500 underline ml-2"
+                onClick={() => setSelectedTags([])}
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-1">ZAF App Catalog</h1>
+      <p className="text-gray-600 mb-6">Upload and preview Zendesk App Framework applications</p>
+      
+      {!previewActive ? (
+        <>
+          <div className="mb-6 flex flex-wrap gap-4">
+            <div className="relative flex-grow">
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Search apps..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                🔍
+              </div>
+            </div>
+            
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept=".zip"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={handleUploadClick}
+                className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                disabled={isUploading}
+              >
+                {isUploading ? "Processing..." : "Upload App"}
+              </button>
+            </div>
+          </div>
+          
+          <TagSelector />
+          
+          <style>{`
+            .app-grid {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 24px;
+            }
+            
+            @media (max-width: 1024px) {
+              .app-grid {
+                grid-template-columns: repeat(2, 1fr);
+              }
+            }
+            
+            @media (max-width: 640px) {
+              .app-grid {
+                grid-template-columns: 1fr;
+              }
+            }
+          `}</style>
+          
+          {filteredApps.length > 0 ? (
+            <div className="app-grid">
+              {filteredApps.map(app => (
+                <AppCard key={app.id} app={app} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No apps found matching your criteria.</p>
+              <button 
+                className="mt-2 text-blue-500 text-sm hover:underline"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedTags([]);
+                }}
+              >
+                Reset filters
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        selectedApp && <AppPreview app={selectedApp} />
+      )}
+    </div>
+  );
+};
+
+export default ZAFAppCatalog;

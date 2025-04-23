@@ -1,38 +1,66 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ZAF App Catalog (Static)</title>
+  <title>ZAF App Catalog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; background: #f9fafb; margin: 0; padding: 2rem; }
-    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #ffffff);
+      margin: 0;
+      padding: 2rem;
+      color: #1f2937;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #111827;
+    }
+
     .app-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
     }
+
     .app-card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
+    .app-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+    }
+
     .app-card h2 {
-      font-size: 1.2rem;
-      margin-top: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      color: #111827;
     }
+
     .app-card p {
       font-size: 0.95rem;
-      color: #555;
+      color: #4b5563;
+      margin: 0 0 1rem;
     }
+
     iframe {
       width: 100%;
-      height: 300px;
-      border: none;
-      margin-top: 1rem;
+      height: 280px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -42,19 +70,19 @@
     <div class="app-card">
       <h2>Hello World App</h2>
       <p>A simple Hello World Zendesk app that demonstrates basic ZAF functionality.</p>
-      <iframe srcdoc="<!DOCTYPE html><html><body><h1>Hello World App</h1><p>This is a simple Zendesk app demo. In a real ZAF app, it would interact with the Zendesk Client.</p></body></html>"></iframe>
+      <iframe srcdoc="<!DOCTYPE html><html><body style='font-family:sans-serif'><h1>Hello World App</h1><p>This is a simple Zendesk app demo. In a real ZAF app, it would interact with the Zendesk Client.</p></body></html>"></iframe>
     </div>
 
     <div class="app-card">
       <h2>Ticket Tagger</h2>
       <p>Helps agents tag tickets with a simple UI.</p>
-      <iframe srcdoc="<!DOCTYPE html><html><body><h1>Ticket Tagger</h1><p>Select tags to apply to this ticket:</p><div class='tag'>bug</div><div class='tag'>feature</div></body></html>"></iframe>
+      <iframe srcdoc="<!DOCTYPE html><html><body style='font-family:sans-serif'><h1>Ticket Tagger</h1><p>Select tags to apply to this ticket:</p><div class='tag'>bug</div><div class='tag'>feature</div></body></html>"></iframe>
     </div>
 
     <div class="app-card">
       <h2>Order Lookup</h2>
       <p>Quickly look up customer orders directly from the ticket sidebar.</p>
-      <iframe srcdoc="<!DOCTYPE html><html><body><h1>Order Lookup</h1><p>Enter order # to search.</p></body></html>"></iframe>
+      <iframe srcdoc="<!DOCTYPE html><html><body style='font-family:sans-serif'><h1>Order Lookup</h1><p>Enter order # to search.</p></body></html>"></iframe>
     </div>
   </div>
 </body>

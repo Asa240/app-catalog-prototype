@@ -284,40 +284,71 @@
     }
 
     // Preload sample apps
-    const sampleApps = [
-      {
-        name: "Hello World App",
-        desc: "A simple Hello World Zendesk app that demonstrates basic ZAF functionality.",
-        cat: "Retail",
-        iframe: "<h1>Hello World App</h1><p>This is a simple Zendesk app demo.</p>",
-        download: "#"
-      },
-      {
-        name: "Ticket Tagger",
-        desc: "Helps agents tag tickets with a simple UI.",
-        cat: "OMS",
-        iframe: "<h1>Ticket Tagger</h1><p>Select tags to apply to this ticket.</p>",
-        download: "#"
-      },
-      {
-        name: "Order Lookup",
-        desc: "Quickly look up customer orders directly from the ticket sidebar.",
-        cat: "Order Lookup",
-        iframe: "<h1>Order Lookup</h1><p>Enter order # to search.</p>",
-        download: "#"
-      }
-    ];
-    sampleApps.forEach(app => {
-      document.getElementById('appGrid').innerHTML += `
-        <div class="app-card" data-category="${app.cat}">
-          <span class="tag">${app.cat}</span>
-          <h2>${app.name}</h2>
-          <p>${app.desc}</p>
-          <iframe srcdoc="${app.iframe.replace(/"/g, '&quot;')}"></iframe>
-          <a class="download-button" href="${app.download}" target="_blank">Download</a>
-        </div>
-      `;
-    });
+const sampleApps = [
+  {
+    name: "POS Insights",
+    desc: "Visualize point-of-sale performance by store and region",
+    cat: "Retail",
+    team: "RetailOps",
+    tags: ["Retail", "Analytics", "+1 more"],
+    iframe: `<body style='font-family:system-ui;padding:1rem'><h3 style='margin:0'>Store Summary</h3><p style='color:gray'>Last 30 days | Region: Midwest</p><table style='width:100%;margin-top:1rem;border-collapse:collapse'><tr><td><strong>Orders</strong></td><td>458</td></tr><tr><td><strong>Returns</strong></td><td>12</td></tr><tr><td><strong>Revenue</strong></td><td>$32,120</td></tr></table></body>`,
+    download: "#"
+  },
+  {
+    name: "Order Monitor",
+    desc: "Real-time view of order pipeline health and exceptions",
+    cat: "OMS",
+    team: "FulfillPro",
+    tags: ["OMS", "Alerts", "+1 more"],
+    iframe: `<body style='font-family:monospace;padding:1rem;background:#fef9c3'><h3 style='margin:0'>⚠️ Delayed Orders</h3><ul><li>#12345 - Warehouse Scan Missing</li><li>#12362 - Carrier Exception</li></ul></body>`,
+    download: "#"
+  },
+  {
+    name: "Asset Tracker",
+    desc: "Track and manage IT assets assigned to customers",
+    cat: "Asset Management",
+    team: "IT Support Team",
+    tags: ["IT", "Asset Management", "+1 more"],
+    iframe: `<body style='font-family:sans-serif;padding:1rem'><input placeholder='Search assets...' style='width:100%;padding:0.5rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:6px'><div style='border:1px solid #ccc;padding:1rem;border-radius:8px'><h4 style='margin:0'>Dell XPS 15 Laptop <span style='float:right;background:#d1fae5;color:#065f46;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;'>Active</span></h4><p style='margin:0.25rem 0 0'>Asset ID: LP-2023-0042</p><p style='margin:0'>Assigned to: John Smith</p></div></body>`,
+    download: "#"
+  },
+  {
+    name: "Order Lookup",
+    desc: "Search and view order status directly from the ticket",
+    cat: "Order Lookup",
+    team: "LogisticsNow",
+    tags: ["Order Lookup", "Retail", "+1 more"],
+    iframe: `<body style='font-family:sans-serif;padding:1rem'><label>Order # <input style='margin-left:0.5rem;padding:0.25rem;border:1px solid #ccc;border-radius:4px'></label><p style='margin-top:1rem'>🔍 Awaiting input...</p></body>`,
+    download: "#"
+  },
+  {
+    name: "Customer Overview",
+    desc: "Full view of a customer’s profile, interactions, and value",
+    cat: "Customer 360",
+    team: "InsightDesk",
+    tags: ["Customer 360", "CRM", "+2 more"],
+    iframe: `<body style='font-family:sans-serif;padding:1rem;background:#f0f9ff'><h3 style='margin:0'>Jane Doe</h3><p>Member since: 2021<br>Lifetime Value: $3,120</p><hr><p><strong>Recent Interactions:</strong><br>• Order follow-up<br>• Loyalty program question</p></body>`,
+    download: "#"
+  }
+];
+
+sampleApps.forEach(app => {
+  const tagHTML = app.tags.map(t =>
+    `<span class="tag${t.includes("+") ? " tag-muted" : ""}">${t}</span>`
+  ).join(" ");
+
+  document.getElementById('appGrid').innerHTML += `
+    <div class="app-card" data-category="${app.cat}">
+      <h2 class="card-title">${app.name}</h2>
+      <p class="card-desc">${app.desc}</p>
+      <div class="card-meta">by ${app.team}</div>
+      <div class="card-tags">${tagHTML}</div>
+      <iframe srcdoc="${app.iframe.replace(/"/g, '&quot;')}"></iframe>
+      <a class="download-button" href="${app.download}" target="_blank">Download</a>
+    </div>
+  `;
+});
+
   </script>
 </body>
 </html>

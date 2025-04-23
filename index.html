@@ -140,21 +140,17 @@
       border-radius: 6px;
       cursor: pointer;
       text-decoration: none;
+      transition: background-color 0.3s, transform 0.2s;
     }
 
     .download-button:hover {
       background-color: #059669;
     }
 
-    .download-button {
-      transition: background-color 0.3s, transform 0.2s;
-    }
-
     .download-button:disabled {
       cursor: not-allowed;
       opacity: 0.75;
     }
-
 
     #modal {
       display: none;
@@ -205,7 +201,8 @@
   </style>
 </head>
 <body>
-  <h1>POC App Catalog</h1>
+  <h1>ZAF App Catalog</h1>
+
   <div class="top-bar">
     <input type="text" class="search-input" placeholder="Search apps..." oninput="filterApps()" id="searchBox">
     <button class="import-button" onclick="openModal()">Import New App</button>
@@ -221,7 +218,6 @@
 
   <div class="app-grid" id="appGrid"></div>
 
-  <!-- Modal -->
   <div id="modal">
     <form onsubmit="submitApp(); return false;">
       <h2>Import New App</h2>
@@ -276,9 +272,8 @@
       const desc = document.getElementById('appDesc').value;
       const cat = document.getElementById('appCategory').value;
       const iframe = document.getElementById('appIframe').value;
-      const download = document.getElementById('appDownload').value;
-
       const container = document.getElementById('appGrid');
+
       const card = document.createElement('div');
       card.className = 'app-card';
       card.dataset.category = cat;
@@ -293,97 +288,78 @@
       closeModal();
     }
 
-    // Preload sample apps
-const sampleApps = [
-  {
-    name: "POS Insights",
-    desc: "Visualize point-of-sale performance by store and region",
-    cat: "Retail",
-    team: "RetailOps",
-    tags: ["Retail", "Analytics", "+1 more"],
-    iframe: `<body style='font-family:system-ui;padding:1rem'><h3 style='margin:0'>Store Summary</h3><p style='color:gray'>Last 30 days | Region: Midwest</p><table style='width:100%;margin-top:1rem;border-collapse:collapse'><tr><td><strong>Orders</strong></td><td>458</td></tr><tr><td><strong>Returns</strong></td><td>12</td></tr><tr><td><strong>Revenue</strong></td><td>$32,120</td></tr></table></body>`,
-    download: "#"
-  },
-  {
-    name: "Order Monitor",
-    desc: "Real-time view of order pipeline health and exceptions",
-    cat: "OMS",
-    team: "FulfillPro",
-    tags: ["OMS", "Alerts", "+1 more"],
-    iframe: `<body style='font-family:monospace;padding:1rem;background:#fef9c3'><h3 style='margin:0'>⚠️ Delayed Orders</h3><ul><li>#12345 - Warehouse Scan Missing</li><li>#12362 - Carrier Exception</li></ul></body>`,
-    download: "#"
-  },
-  {
-    name: "Asset Tracker",
-    desc: "Track and manage IT assets assigned to customers",
-    cat: "Asset Management",
-    team: "IT Support Team",
-    tags: ["IT", "Asset Management", "+1 more"],
-    iframe: `<body style='font-family:sans-serif;padding:1rem'><input placeholder='Search assets...' style='width:100%;padding:0.5rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:6px'><div style='border:1px solid #ccc;padding:1rem;border-radius:8px'><h4 style='margin:0'>Dell XPS 15 Laptop <span style='float:right;background:#d1fae5;color:#065f46;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;'>Active</span></h4><p style='margin:0.25rem 0 0'>Asset ID: LP-2023-0042</p><p style='margin:0'>Assigned to: John Smith</p></div></body>`,
-    download: "#"
-  },
-  {
-    name: "Order Lookup",
-    desc: "Search and view order status directly from the ticket",
-    cat: "Order Lookup",
-    team: "LogisticsNow",
-    tags: ["Order Lookup", "Retail", "+1 more"],
-    iframe: `<body style='font-family:sans-serif;padding:1rem'><label>Order # <input style='margin-left:0.5rem;padding:0.25rem;border:1px solid #ccc;border-radius:4px'></label><p style='margin-top:1rem'>🔍 Awaiting input...</p></body>`,
-    download: "#"
-  },
-  {
-    name: "Customer Overview",
-    desc: "Full view of a customer’s profile, interactions, and value",
-    cat: "Customer 360",
-    team: "InsightDesk",
-    tags: ["Customer 360", "CRM", "+2 more"],
-    iframe: `<body style='font-family:sans-serif;padding:1rem;background:#f0f9ff'><h3 style='margin:0'>Jane Doe</h3><p>Member since: 2021<br>Lifetime Value: $3,120</p><hr><p><strong>Recent Interactions:</strong><br>• Order follow-up<br>• Loyalty program question</p></body>`,
-    download: "#"
-  }
-];
+    function fakeDownload(event) {
+      event.preventDefault();
+      const btn = event.target;
+      btn.innerText = "✔ Downloaded";
+      btn.disabled = true;
+      btn.style.backgroundColor = "#4ade80";
+      setTimeout(() => {
+        btn.innerText = "Download";
+        btn.disabled = false;
+        btn.style.backgroundColor = "#10b981";
+      }, 2000);
+    }
 
-sampleApps.forEach(app => {
-  const tagHTML = app.tags.map(t =>
-    `<span class="tag${t.includes("+") ? " tag-muted" : ""}">${t}</span>`
-  ).join(" ");
+    const sampleApps = [
+      {
+        name: "POS Insights",
+        desc: "Visualize point-of-sale performance by store and region",
+        cat: "Retail",
+        team: "RetailOps",
+        tags: ["Retail", "Analytics", "+1 more"],
+        iframe: `<body style='font-family:system-ui;padding:1rem'><h3 style='margin:0'>Store Summary</h3><p style='color:gray'>Last 30 days | Region: Midwest</p><table style='width:100%;margin-top:1rem;border-collapse:collapse'><tr><td><strong>Orders</strong></td><td>458</td></tr><tr><td><strong>Returns</strong></td><td>12</td></tr><tr><td><strong>Revenue</strong></td><td>$32,120</td></tr></table></body>`
+      },
+      {
+        name: "Order Monitor",
+        desc: "Real-time view of order pipeline health and exceptions",
+        cat: "OMS",
+        team: "FulfillPro",
+        tags: ["OMS", "Alerts", "+1 more"],
+        iframe: `<body style='font-family:monospace;padding:1rem;background:#fef9c3'><h3 style='margin:0'>⚠️ Delayed Orders</h3><ul><li>#12345 - Warehouse Scan Missing</li><li>#12362 - Carrier Exception</li></ul></body>`
+      },
+      {
+        name: "Asset Tracker",
+        desc: "Track and manage IT assets assigned to customers",
+        cat: "Asset Management",
+        team: "IT Support Team",
+        tags: ["IT", "Asset Management", "+1 more"],
+        iframe: `<body style='font-family:sans-serif;padding:1rem'><input placeholder='Search assets...' style='width:100%;padding:0.5rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:6px'><div style='border:1px solid #ccc;padding:1rem;border-radius:8px'><h4 style='margin:0'>Dell XPS 15 Laptop <span style='float:right;background:#d1fae5;color:#065f46;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;'>Active</span></h4><p style='margin:0.25rem 0 0'>Asset ID: LP-2023-0042</p><p style='margin:0'>Assigned to: John Smith</p></div></body>`
+      },
+      {
+        name: "Order Lookup",
+        desc: "Search and view order status directly from the ticket",
+        cat: "Order Lookup",
+        team: "LogisticsNow",
+        tags: ["Order Lookup", "Retail", "+1 more"],
+        iframe: `<body style='font-family:sans-serif;padding:1rem'><label>Order # <input style='margin-left:0.5rem;padding:0.25rem;border:1px solid #ccc;border-radius:4px'></label><p style='margin-top:1rem'>🔍 Awaiting input...</p></body>`
+      },
+      {
+        name: "Customer Overview",
+        desc: "Full view of a customer’s profile, interactions, and value",
+        cat: "Customer 360",
+        team: "InsightDesk",
+        tags: ["Customer 360", "CRM", "+2 more"],
+        iframe: `<body style='font-family:sans-serif;padding:1rem;background:#f0f9ff'><h3 style='margin:0'>Jane Doe</h3><p>Member since: 2021<br>Lifetime Value: $3,120</p><hr><p><strong>Recent Interactions:</strong><br>• Order follow-up<br>• Loyalty program question</p></body>`
+      }
+    ];
 
-  document.getElementById('appGrid').innerHTML += `
-    <div class="app-card" data-category="${app.cat}">
-      <h2 class="card-title">${app.name}</h2>
-      <p class="card-desc">${app.desc}</p>
-      <div class="card-meta">by ${app.team}</div>
-      <div class="card-tags">${tagHTML}</div>
-      <iframe srcdoc="${app.iframe.replace(/"/g, '&quot;')}"></iframe>
-      <a class="download-button" href="#" onclick="fakeDownload(event)">Download</a>
-    </div>
-  `;
-});
+    sampleApps.forEach(app => {
+      const tagHTML = app.tags.map(t =>
+        `<span class="tag${t.includes("+") ? " tag-muted" : ""}">${t}</span>`
+      ).join(" ");
 
-<script>
-  function sendHeightToParent() {
-    const height = document.documentElement.scrollHeight;
-    window.parent.postMessage({ type: "resize", height }, "*");
-  }
-
-  window.addEventListener("load", sendHeightToParent);
-  window.addEventListener("resize", sendHeightToParent);
-  const observer = new MutationObserver(sendHeightToParent);
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  function fakeDownload(event) {
-    event.preventDefault();
-    const btn = event.target;
-    btn.innerText = "✔ Downloaded";
-    btn.disabled = true;
-    btn.style.backgroundColor = "#4ade80"; // green success
-
-    setTimeout(() => {
-      btn.innerText = "Download";
-      btn.disabled = false;
-      btn.style.backgroundColor = "#10b981"; // original green
-    }, 2000);
-  }
-</script>
-
+      document.getElementById('appGrid').innerHTML += `
+        <div class="app-card" data-category="${app.cat}">
+          <h2 class="card-title">${app.name}</h2>
+          <p class="card-desc">${app.desc}</p>
+          <div class="card-meta">by ${app.team}</div>
+          <div class="card-tags">${tagHTML}</div>
+          <iframe srcdoc="${app.iframe.replace(/"/g, '&quot;')}"></iframe>
+          <a class="download-button" href="#" onclick="fakeDownload(event)">Download</a>
+        </div>
+      `;
+    });
+  </script>
 </body>
 </html>

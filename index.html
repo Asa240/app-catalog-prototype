@@ -354,7 +354,7 @@ sampleApps.forEach(app => {
       <div class="card-meta">by ${app.team}</div>
       <div class="card-tags">${tagHTML}</div>
       <iframe srcdoc="${app.iframe.replace(/"/g, '&quot;')}"></iframe>
-      <a class="download-button" href="${app.download}" target="_blank">Download</a>
+      <a class="download-button" href="#" onclick="fakeDownload(event)">Download</a>
     </div>
   `;
 });
@@ -370,23 +370,21 @@ sampleApps.forEach(app => {
   const observer = new MutationObserver(sendHeightToParent);
   observer.observe(document.body, { childList: true, subtree: true });
 
-function fakeDownload(event) {
-  event.preventDefault();
-  const btn = event.target;
-  btn.innerText = "✔ Downloaded";
-  btn.disabled = true;
-  btn.style.backgroundColor = "#4ade80"; // green success
+  function fakeDownload(event) {
+    event.preventDefault();
+    const btn = event.target;
+    btn.innerText = "✔ Downloaded";
+    btn.disabled = true;
+    btn.style.backgroundColor = "#4ade80"; // green success
 
-  setTimeout(() => {
-    btn.innerText = "Download";
-    btn.disabled = false;
-    btn.style.backgroundColor = "#10b981"; // original green
-  }, 2000); // Reset after 2 seconds
-}
-
-
-    
+    setTimeout(() => {
+      btn.innerText = "Download";
+      btn.disabled = false;
+      btn.style.backgroundColor = "#10b981"; // original green
+    }, 2000);
+  }
 </script>
+
 
     
 

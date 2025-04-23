@@ -349,6 +349,15 @@ sampleApps.forEach(app => {
   `;
 });
 
+function sendHeightToParent() {
+  const height = document.documentElement.scrollHeight;
+  window.parent.postMessage({ type: "resize", height }, "*");
+}
+
+window.addEventListener("load", sendHeightToParent);
+window.addEventListener("resize", sendHeightToParent);
+    
+
   </script>
 </body>
 </html>

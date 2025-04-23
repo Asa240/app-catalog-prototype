@@ -277,7 +277,7 @@
         <h2>${name}</h2>
         <p>${desc}</p>
         <iframe srcdoc="${iframe.replace(/"/g, '&quot;')}"></iframe>
-        <a class="download-button" href="${download}" target="_blank">Download</a>
+        <a class="download-button" href="#" onclick="fakeDownload(event)">Download</a>
       `;
       container.appendChild(card);
       closeModal();
@@ -359,6 +359,23 @@ sampleApps.forEach(app => {
   window.addEventListener("resize", sendHeightToParent);
   const observer = new MutationObserver(sendHeightToParent);
   observer.observe(document.body, { childList: true, subtree: true });
+
+function fakeDownload(event) {
+  event.preventDefault();
+  const btn = event.target;
+  btn.innerText = "✔ Downloaded";
+  btn.disabled = true;
+  btn.style.backgroundColor = "#4ade80"; // green success
+
+  setTimeout(() => {
+    btn.innerText = "Download";
+    btn.disabled = false;
+    btn.style.backgroundColor = "#10b981"; // original green
+  }, 2000); // Reset after 2 seconds
+}
+
+
+    
 </script>
 
     

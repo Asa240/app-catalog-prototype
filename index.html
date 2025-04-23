@@ -146,6 +146,46 @@
       background-color: #059669;
     }
 
+    #modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(2px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #modal form {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    #modal h2 {
+      margin-top: 0;
+    }
+
+    #modal input,
+    #modal textarea,
+    #modal select {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+    }
+
+    #modal .buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
     @media (max-width: 600px) {
       .top-bar {
         flex-direction: column;
@@ -158,7 +198,7 @@
   <h1>ZAF App Catalog</h1>
   <div class="top-bar">
     <input type="text" class="search-input" placeholder="Search apps..." oninput="filterApps()" id="searchBox">
-    <button class="import-button">Import New App</button>
+    <button class="import-button" onclick="openModal()">Import New App</button>
   </div>
 
   <div class="filters">
@@ -169,46 +209,29 @@
     <div class="filter-pill" onclick="filterBy('Customer 360')">Customer 360</div>
   </div>
 
-  <div class="app-grid" id="appGrid">
-    <div class="app-card" data-category="Retail">
-      <span class="tag">Retail</span>
-      <h2>Hello World App</h2>
-      <p>A simple Hello World Zendesk app that demonstrates basic ZAF functionality.</p>
-      <iframe srcdoc="<h1>Hello World App</h1><p>This is a simple Zendesk app demo.</p>"></iframe>
-      <a class="download-button" href="#">Download</a>
-    </div>
+  <div class="app-grid" id="appGrid"></div>
 
-    <div class="app-card" data-category="OMS">
-      <span class="tag">OMS</span>
-      <h2>Ticket Tagger</h2>
-      <p>Helps agents tag tickets with a simple UI.</p>
-      <iframe srcdoc="<h1>Ticket Tagger</h1><p>Select tags to apply to this ticket.</p>"></iframe>
-      <a class="download-button" href="#">Download</a>
-    </div>
-
-    <div class="app-card" data-category="Order Lookup">
-      <span class="tag">Order Lookup</span>
-      <h2>Order Lookup</h2>
-      <p>Quickly look up customer orders directly from the ticket sidebar.</p>
-      <iframe srcdoc="<h1>Order Lookup</h1><p>Enter order # to search.</p>"></iframe>
-      <a class="download-button" href="#">Download</a>
-    </div>
-
-    <div class="app-card" data-category="Customer 360">
-      <span class="tag">Customer 360</span>
-      <h2>Customer Profile</h2>
-      <p>View a full 360° view of the customer, with interaction history and preferences.</p>
-      <iframe srcdoc="<h1>Customer 360</h1><p>Comprehensive customer overview panel.</p>"></iframe>
-      <a class="download-button" href="#">Download</a>
-    </div>
-
-    <div class="app-card" data-category="Asset Management">
-      <span class="tag">Asset Management</span>
-      <h2>Asset Tracker</h2>
-      <p>Track hardware, licenses, and other assets linked to a user.</p>
-      <iframe srcdoc="<h1>Asset Tracker</h1><p>Search and update asset records.</p>"></iframe>
-      <a class="download-button" href="#">Download</a>
-    </div>
+  <!-- Modal -->
+  <div id="modal">
+    <form onsubmit="submitApp(); return false;">
+      <h2>Import New App</h2>
+      <input id="appName" type="text" placeholder="App Name" required />
+      <textarea id="appDesc" rows="2" placeholder="App Description" required></textarea>
+      <select id="appCategory" required>
+        <option value="">Select Category</option>
+        <option>Retail</option>
+        <option>OMS</option>
+        <option>Asset Management</option>
+        <option>Order Lookup</option>
+        <option>Customer 360</option>
+      </select>
+      <textarea id="appIframe" rows="4" placeholder="iframe srcdoc HTML (no quotes)" required></textarea>
+      <input id="appDownload" type="url" placeholder="Download URL" required />
+      <div class="buttons">
+        <button type="button" onclick="closeModal()">Cancel</button>
+        <button type="submit" style="background:#10b981; color:white;">Add App</button>
+      </div>
+    </form>
   </div>
 
   <script>
@@ -229,6 +252,72 @@
         card.style.display = card.dataset.category === category ? 'flex' : 'none';
       });
     }
+
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function submitApp() {
+      const name = document.getElementById('appName').value;
+      const desc = document.getElementById('appDesc').value;
+      const cat = document.getElementById('appCategory').value;
+      const iframe = document.getElementById('appIframe').value;
+      const download = document.getElementById('appDownload').value;
+
+      const container = document.getElementById('appGrid');
+      const card = document.createElement('div');
+      card.className = 'app-card';
+      card.dataset.category = cat;
+      card.innerHTML = `
+        <span class="tag">${cat}</span>
+        <h2>${name}</h2>
+        <p>${desc}</p>
+        <iframe srcdoc="${iframe.replace(/"/g, '&quot;')}"></iframe>
+        <a class="download-button" href="${download}" target="_blank">Download</a>
+      `;
+      container.appendChild(card);
+      closeModal();
+    }
+
+    // Preload sample apps
+    const sampleApps = [
+      {
+        name: "Hello World App",
+        desc: "A simple Hello World Zendesk app that demonstrates basic ZAF functionality.",
+        cat: "Retail",
+        iframe: "<h1>Hello World App</h1><p>This is a simple Zendesk app demo.</p>",
+        download: "#"
+      },
+      {
+        name: "Ticket Tagger",
+        desc: "Helps agents tag tickets with a simple UI.",
+        cat: "OMS",
+        iframe: "<h1>Ticket Tagger</h1><p>Select tags to apply to this ticket.</p>",
+        download: "#"
+      },
+      {
+        name: "Order Lookup",
+        desc: "Quickly look up customer orders directly from the ticket sidebar.",
+        cat: "Order Lookup",
+        iframe: "<h1>Order Lookup</h1><p>Enter order # to search.</p>",
+        download: "#"
+      }
+    ];
+    sampleApps.forEach(app => {
+      document.getElementById('appGrid').innerHTML += `
+        <div class="app-card" data-category="${app.cat}">
+          <span class="tag">${app.cat}</span>
+          <h2>${app.name}</h2>
+          <p>${app.desc}</p>
+          <iframe srcdoc="${app.iframe.replace(/"/g, '&quot;')}"></iframe>
+          <a class="download-button" href="${app.download}" target="_blank">Download</a>
+        </div>
+      `;
+    });
   </script>
 </body>
 </html>
